@@ -17,7 +17,7 @@ using namespace std;
 	return true;
 }*/
 
-__global__ void addKernel(int *input, int *output )
+__global__ void addKernel(int *input, int *output)
 {	
 	int j = 0;
 	int size = 100000;
@@ -64,9 +64,11 @@ int main()
 	cudaMemcpy(O_v, cuda_A, sizeof(input) / sizeof(int), cudaMemcpyDeviceToHost);
 
 	int i = 0;
+	//char* cout = "cout";
 	while (O_v[i] != 0)
 	{
-		fprintf(stderr, (char*)O_v[i]);
+		//cout = (char*)O_v[i];
+		fprintf(stderr, (char*)O_v);
 		i++;
 	}
 
