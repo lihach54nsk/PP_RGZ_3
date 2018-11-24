@@ -24,11 +24,13 @@ __global__ void addKernel(int *input, int *output)
 	for (int i = 0; i < size; i++)
 	{
 		for (int i = 2; i <= sqrtf(input[i]); i++)
-			if (input[i]%i == 0) continue;
+		{
+			if (input[i] % i == 0) continue;
 			else
 			{
 				output[j] = input[i]; j++;
 			}
+		}
 		//if (Prime(input[i]) == true) { output[j] = input[i]; j++; }
 		//else continue;
 	}
@@ -39,8 +41,12 @@ int main()
 	int input[100000];
 	int output[sizeof(input) / sizeof(int)];
 
+	//int* testA = new int[1];
+	//int* testB = new int[1];
+
 	int* I_a = (int*)malloc(sizeof(input) / sizeof(int)); // входной вектор
 	int* O_v = (int*)malloc(sizeof(input) / sizeof(int)); // выходной вектор
+	int* finale = new int[sizeof(input) / sizeof(int)];
 
 	for (int c = 1; c < 99999; c++)
 	{
@@ -49,26 +55,41 @@ int main()
 
 	I_a = input;
 	O_v = output;
+	//testA[0] = 5;
+	//testB[0] = 0;
+
+	//int* cudaTestA, *cudaTestB;
+	//cudaMalloc(&cudaTestA, 1);
+	//cudaMalloc(&cudaTestB, 1);
 
 	int* cuda_A;
 	cudaMalloc(&cuda_A, sizeof(input) / sizeof(int));
+	int* cuda_B;
+	cudaMalloc(&cuda_B, sizeof(input) / sizeof(int));
+
+	//cudaMemcpy(cudaTestA, testA, 1, cudaMemcpyHostToDevice);
 
 	cudaMemcpy(cuda_A, I_a, sizeof(input) / sizeof(int), cudaMemcpyHostToDevice);
+	cudaMemcpy(cuda_B, O_v, sizeof(input) / sizeof(int), cudaMemcpyHostToDevice);
 
 	int threadsPerBlock = 256;
-	int blockPerGrid = 1;
+	int blockPerGrid = 10;
 	fprintf(stderr, "Initialization success!");
 
-	addKernel <<< blockPerGrid, threadsPerBlock >>> (cuda_A, O_v);
+	addKernel <<< blockPerGrid, threadsPerBlock >>> (cuda_A, cuda_B);	
 
-	cudaMemcpy(O_v, cuda_A, sizeof(input) / sizeof(int), cudaMemcpyDeviceToHost);
+	//cudaMemcpy(testB, cudaTestB, 1, cudaMemcpyHostToDevice);
+	
+	cudaMemcpy(finale, cuda_B, sizeof(input) / sizeof(int), cudaMemcpyDeviceToHost);
+
+	cudaThreadSynchronize();
 
 	int i = 0;
 	//char* cout = "cout";
-	while (O_v[i] != 0)
+	while (finale[i] != 5)
 	{
 		//cout = (char*)O_v[i];
-		fprintf(stderr, (char*)O_v);
+		fprintf(stderr, (char*)finale);
 		i++;
 	}
 
