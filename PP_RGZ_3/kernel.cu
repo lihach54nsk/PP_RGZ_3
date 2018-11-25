@@ -9,14 +9,6 @@ cudaError_t addWithCuda(long long value);
 
 using namespace std;
 
-__device__ bool Prime(long long n)
-{
-	for (int i = 2; i <= sqrt((double)n); i++)
-		if (n%i == 0)
-			return false;
-	return true;
-}
-
 __global__ void addKernel(long long from, long long a, int *output, int cudaCores)
 {
 	const long long current = threadIdx.x + from + cudaCores * blockIdx.x;
@@ -62,13 +54,9 @@ int main()
 // Helper function for using CUDA to add vectors in parallel.
 cudaError_t addWithCuda(long long value)
 {
-	//long long *dev_a = 0;
-
-	int cudaCores = 100;
-	//int blocksCount = 1;
+	int cudaCores = 1000;
 
 	long long from = 2;
-	//long long to = sqrt((double)value);
 	const long long bufferSize = value - from;
 	const long long blockCount = (bufferSize / cudaCores) + (bufferSize%cudaCores == 0 ? 0 : 1);
 
@@ -95,12 +83,6 @@ cudaError_t addWithCuda(long long value)
 	}
 
 	// Allocate GPU buffers for three vectors (two input, one output).
-	/*cudaStatus = cudaMalloc((void**)&dev_a, 1);
-	if (cudaStatus != cudaSuccess) {
-		fprintf(stderr, "cudaMalloc failed!");
-		goto Error;
-	}*/
-
 	cudaStatus = cudaMalloc((void**)&dev_output, bufferSize);
 	if (cudaStatus != cudaSuccess) {
 		fprintf(stderr, "cudaMalloc failed!");
@@ -108,14 +90,6 @@ cudaError_t addWithCuda(long long value)
 	}
 
 	// Copy input vectors from host memory to GPU buffers.
-	/*cudaStatus = cudaMemcpy(dev_a, &value, 1, cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) {
-		fprintf(stderr, "cudaMemcpy failed!");
-		goto Error;
-	}*/
-
-	//int threadsPerBlock = 55;
-	//int blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
 	// Launch a kernel on the GPU with one thread for each element.
 
 	cudaEventRecord(start, 0);
@@ -151,14 +125,13 @@ cudaError_t addWithCuda(long long value)
 
 Error:
 	cudaFree(dev_output);
-	//cudaFree(dev_a);
 
-	int y = 0;
+	/*int y = 0;
 	while (y < bufferSize)
 	{
 		cout << output[y] << endl;
 		y++;
-	}
+	}*/
 
 	cout << "Work time: " << time << endl;
 	system("pause");
