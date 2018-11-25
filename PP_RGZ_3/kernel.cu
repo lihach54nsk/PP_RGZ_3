@@ -30,9 +30,9 @@ __global__ void addKernel(int *c, const int *a, int size)
 
 int main()
 {
-	const int arraySize = 400000;
+	const int arraySize = 500000;
 	int *a = new int[arraySize];
-	int *c = new int[arraySize];
+	int *c = new int[arraySize / 2];
 
 	for (int c = 1; c < arraySize; c++)
 	{
@@ -89,7 +89,7 @@ cudaError_t addWithCuda(int *c, const int *a, unsigned int size)
 	}
 
 	// Allocate GPU buffers for three vectors (two input, one output)    .
-	cudaStatus = cudaMalloc((void**)&dev_c, size);
+	cudaStatus = cudaMalloc((void**)&dev_c, size / 2);
 	if (cudaStatus != cudaSuccess) {
 		fprintf(stderr, "cudaMalloc failed!");
 		goto Error;
@@ -137,7 +137,7 @@ cudaError_t addWithCuda(int *c, const int *a, unsigned int size)
 	cudaEventElapsedTime(&time, start, stop);
 
 	// Copy output vector from GPU buffer to host memory.
-	cudaStatus = cudaMemcpy(c, dev_c, size, cudaMemcpyDeviceToHost);
+	cudaStatus = cudaMemcpy(c, dev_c, size / 2, cudaMemcpyDeviceToHost);
 	if (cudaStatus != cudaSuccess) {
 		fprintf(stderr, "cudaMemcpy failed!");
 		goto Error;
