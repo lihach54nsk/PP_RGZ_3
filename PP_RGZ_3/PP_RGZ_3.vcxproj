@@ -75,6 +75,7 @@
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
+      <Optimization>InheritFromHost</Optimization>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
