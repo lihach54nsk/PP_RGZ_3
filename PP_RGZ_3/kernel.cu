@@ -20,7 +20,6 @@ __device__ bool Prime(long long n)
 __global__ void addKernel(int *c, const int *a, int size)
 {
 	int j = 0;
-	int tid = threadIdx.x + blockIdx.x;
 
 	for (int k = 0; k < size; k++)
 	{
@@ -113,10 +112,9 @@ cudaError_t addWithCuda(int *c, const int *a, unsigned int size)
 	//int blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
 	// Launch a kernel on the GPU with one thread for each element.
 
-	//auto begin = chrono::high_resolution_clock::now();
 	cudaEventRecord(start, 0);
 
-	addKernel << <1, 1024 >> > (dev_c, dev_a, size);
+	addKernel <<< 10, 100 >>> (dev_c, dev_a, size);
 
 	// Check for any errors launching the kernel
 	cudaStatus = cudaGetLastError();
@@ -138,8 +136,6 @@ cudaError_t addWithCuda(int *c, const int *a, unsigned int size)
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&time, start, stop);
 
-	//auto end = chrono::high_resolution_clock::now();
-
 	// Copy output vector from GPU buffer to host memory.
 	cudaStatus = cudaMemcpy(c, dev_c, size, cudaMemcpyDeviceToHost);
 	if (cudaStatus != cudaSuccess) {
@@ -150,8 +146,7 @@ cudaError_t addWithCuda(int *c, const int *a, unsigned int size)
 Error:
 	cudaFree(dev_c);
 	cudaFree(dev_a);
-	
-	//cout << "Work time: " << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << endl;
+
 	cout << "Work time: " << time << endl;
 	system("pause");
 
