@@ -17,7 +17,7 @@ __device__ bool Prime(long long n)
 	return true;
 }
 
-__global__ void addKernel(long long from, long long *a, int *output, int cudaCores)
+__global__ void addKernel(long long from, long long a, int *output, int cudaCores)
 {
 	const long long current = threadIdx.x + from + cudaCores * blockIdx.x;
 
@@ -25,32 +25,12 @@ __global__ void addKernel(long long from, long long *a, int *output, int cudaCor
 
 	output[outPos] = 0;
 
-	if (a[0]%current == 0 && Prime(current))
-	{
-		while (a[0]%current == 0)
-		{
-			output[outPos] = 1;
-		}
-	}
-
-	/*for (int k = 0; k < size; k++)
-	{
-		if (Prime(a[0], from, to) == true) {}
-		else continue;
-	}*/
+	if (a % current == 0) output[outPos] = -1;
+	else output[outPos] = 1;
 }
 
 int main()
 {
-	/*const int arraySize = 500000;
-	int *a = new int[arraySize];
-	int *c = new int[arraySize / 2];
-
-	for (int c = 1; c < arraySize; c++)
-	{
-		a[c - 1] = c;
-	}*/
-
 	long long value;
 
 	cout << "Write value: "; cin >> value;
@@ -64,14 +44,8 @@ int main()
 	}
 	auto end = chrono::high_resolution_clock::now();
 
-	/*int i = 0;
-	while (c[i] > 0)
-	{
-		cout << c[i] << endl;
-		i++;
-	}*/
-
 	cout << "Work time: " << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << endl;
+
 	system("pause");
 
 	// cudaDeviceReset must be called before exiting in order for profiling and
@@ -88,10 +62,10 @@ int main()
 // Helper function for using CUDA to add vectors in parallel.
 cudaError_t addWithCuda(long long value)
 {
-	long long *dev_a = 0;
+	//long long *dev_a = 0;
 
 	int cudaCores = 100;
-	int blocksCount = 1;
+	//int blocksCount = 1;
 
 	long long from = 2;
 	//long long to = sqrt((double)value);
@@ -102,17 +76,6 @@ cudaError_t addWithCuda(long long value)
 	{
 		cudaCores = bufferSize;
 	}
-
-	/*long long *from = new long long[bufferSize];
-	long long *to = new long long[bufferSize];
-
-	long long step = (to - from) / cudaCores;
-
-	for (int i = 0; i < bufferSize; i++) // интервалы от и до
-	{
-		from[&i] = from + step * i;
-		to[&i] = from + step * i + step;
-	}*/
 
 	int *output = new int[bufferSize];
 	int *dev_output;
@@ -132,17 +95,11 @@ cudaError_t addWithCuda(long long value)
 	}
 
 	// Allocate GPU buffers for three vectors (two input, one output).
-	/*cudaStatus = cudaMalloc((void**)&dev_c, 1);
+	/*cudaStatus = cudaMalloc((void**)&dev_a, 1);
 	if (cudaStatus != cudaSuccess) {
 		fprintf(stderr, "cudaMalloc failed!");
 		goto Error;
 	}*/
-
-	cudaStatus = cudaMalloc((void**)&dev_a, 1);
-	if (cudaStatus != cudaSuccess) {
-		fprintf(stderr, "cudaMalloc failed!");
-		goto Error;
-	}
 
 	cudaStatus = cudaMalloc((void**)&dev_output, bufferSize);
 	if (cudaStatus != cudaSuccess) {
@@ -151,11 +108,11 @@ cudaError_t addWithCuda(long long value)
 	}
 
 	// Copy input vectors from host memory to GPU buffers.
-	cudaStatus = cudaMemcpy(dev_a, &value, 1, cudaMemcpyHostToDevice);
+	/*cudaStatus = cudaMemcpy(dev_a, &value, 1, cudaMemcpyHostToDevice);
 	if (cudaStatus != cudaSuccess) {
 		fprintf(stderr, "cudaMemcpy failed!");
 		goto Error;
-	}
+	}*/
 
 	//int threadsPerBlock = 55;
 	//int blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
@@ -163,7 +120,7 @@ cudaError_t addWithCuda(long long value)
 
 	cudaEventRecord(start, 0);
 
-	addKernel <<< blocksCount, cudaCores >>> (from, dev_a, dev_output, cudaCores);
+	addKernel <<< blockCount, cudaCores >>> (from, value, dev_output, cudaCores);
 
 	// Check for any errors launching the kernel
 	cudaStatus = cudaGetLastError();
@@ -192,15 +149,16 @@ cudaError_t addWithCuda(long long value)
 		goto Error;
 	}
 
-	/*cudaStatus = cudaMemcpy(c, dev_c, 1, cudaMemcpyDeviceToHost);
-	if (cudaStatus != cudaSuccess) {
-		fprintf(stderr, "cudaMemcpy failed!");
-		goto Error;
-	}*/
-
 Error:
 	cudaFree(dev_output);
-	cudaFree(dev_a);
+	//cudaFree(dev_a);
+
+	int y = 0;
+	while (y < bufferSize)
+	{
+		cout << output[y] << endl;
+		y++;
+	}
 
 	cout << "Work time: " << time << endl;
 	system("pause");
