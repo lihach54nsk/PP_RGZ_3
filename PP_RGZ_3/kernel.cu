@@ -9,7 +9,7 @@ cudaError_t addWithCuda(long long value);
 
 using namespace std;
 
-__global__ void addKernel(long long from, long long a, int *output, int cudaCores)
+__global__ void addKernel(long long from, long long a, char *output, int cudaCores)
 {
 	const long long current = threadIdx.x + from + cudaCores * blockIdx.x;
 
@@ -19,6 +19,12 @@ __global__ void addKernel(long long from, long long a, int *output, int cudaCore
 
 	if (a % current == 0) output[outPos] = -1;
 	else output[outPos] = 1;
+
+	/*for (int i = from; i < sqrt((double)a); i++)
+	{
+		if (a % i == 0) output[outPos] = -1;
+		else output[outPos] = 1;
+	}*/
 }
 
 int main()
@@ -47,7 +53,6 @@ int main()
 		fprintf(stderr, "cudaDeviceReset failed!");
 		return 1;
 	}
-
 	return 0;
 }
 
@@ -65,8 +70,8 @@ cudaError_t addWithCuda(long long value)
 		cudaCores = bufferSize;
 	}
 
-	int *output = new int[bufferSize];
-	int *dev_output;
+	char *output = new char[bufferSize];
+	char *dev_output;
 
 	cudaError_t cudaStatus;
 	cudaEvent_t start;
@@ -126,10 +131,13 @@ cudaError_t addWithCuda(long long value)
 Error:
 	cudaFree(dev_output);
 
-	/*int y = 0;
-	while (y < bufferSize)
+	cout << (int)output[0] << endl;
+	if ((int)output[0] > 0)	cout << "Chislo " << value << " prostoe" << endl;
+	else cout << "Chislo " << value << " ne prostoe" << endl;
+	
+	/*while (y < bufferSize)
 	{
-		cout << output[y] << endl;
+		cout << (int)output[y] << endl;
 		y++;
 	}*/
 
