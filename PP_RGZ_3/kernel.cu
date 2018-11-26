@@ -11,14 +11,14 @@ using namespace std;
 
 __global__ void addKernel(long long from, long long a, char *output, int cudaCores)
 {
-	const long long current = threadIdx.x + from + cudaCores * blockIdx.x;
+	long long current = threadIdx.x + from + cudaCores * blockIdx.x;
 
 	long long outPos = current - from;
 
 	output[outPos] = 0;
 
-	if (a % current == 0) output[0] = -1;
-	else output[0] = 1;
+	if (a % current == 0) output[outPos] = 1;
+	else output[outPos] = -1;
 
 	/*for (int i = from; i < sqrt((double)a); i++)
 	{
@@ -122,7 +122,7 @@ cudaError_t addWithCuda(long long value)
 	cudaEventElapsedTime(&time, start, stop);
 
 	// Copy output vector from GPU buffer to host memory.
-	cudaStatus = cudaMemcpy(output, dev_output, 1, cudaMemcpyDeviceToHost);
+	cudaStatus = cudaMemcpy(output, dev_output, bufferSize, cudaMemcpyDeviceToHost);
 	if (cudaStatus != cudaSuccess) {
 		fprintf(stderr, "cudaMemcpy failed!");
 		goto Error;
@@ -132,8 +132,15 @@ Error:
 	cudaFree(dev_output);
 
 	//cout << (int)output[0] << endl;
-	if ((int)output[0] > 0)	cout << "Chislo " << value << " prostoe" << endl;
-	else cout << "Chislo " << value << " ne prostoe" << endl;
+	int y = 0;
+	while (y < bufferSize)
+	{
+		if ((int)output[y] > 0) { cout << "Chislo " << value << " ne prostoe" << endl; break; }
+		y++;
+	}
+
+	//if ((int)output[0] > 0)	cout << "Chislo " << value << " prostoe" << endl;
+	//else cout << "Chislo " << value << " ne prostoe" << endl;	
 	
 	/*while (y < bufferSize)
 	{
