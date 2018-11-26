@@ -17,8 +17,8 @@ __global__ void addKernel(long long from, long long a, char *output, int cudaCor
 
 	output[outPos] = 0;
 
-	if (a % current == 0) output[outPos] = -1;
-	else output[outPos] = 1;
+	if (a % current == 0) output[0] = -1;
+	else output[0] = 1;
 
 	/*for (int i = from; i < sqrt((double)a); i++)
 	{
@@ -131,7 +131,7 @@ cudaError_t addWithCuda(long long value)
 Error:
 	cudaFree(dev_output);
 
-	cout << (int)output[0] << endl;
+	//cout << (int)output[0] << endl;
 	if ((int)output[0] > 0)	cout << "Chislo " << value << " prostoe" << endl;
 	else cout << "Chislo " << value << " ne prostoe" << endl;
 	
